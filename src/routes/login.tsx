@@ -7,7 +7,7 @@ import { Loader2, Sparkles } from "lucide-react";
 export const Route = createFileRoute("/login")({ component: LoginPage });
 
 function LoginPage() {
-  const { signIn } = useAuth();
+  const { signIn, enterDemo } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,15 +27,12 @@ function LoginPage() {
     navigate({ to: "/app" });
   }
 
-  async function tryDemo() {
-    setLoading(true);
-    const { error, name } = await signIn("demo@quorum.app", "demo1234");
-    setLoading(false);
-    if (error) {
-      toast.error("Demo unavailable", { description: "Run the seed SQL first in Supabase." });
-      return;
-    }
-    toast.success(`Welcome, ${name?.split(" ")[0] ?? "Aria"}! (Demo)`);
+  function tryDemo() {
+    // Fully client-side demo — works even if the database is unreachable.
+    enterDemo();
+    toast.success("Welcome, Aria! Exploring with sample data.", {
+      description: "Everything you change stays in your browser. Sign out to exit demo.",
+    });
     navigate({ to: "/app" });
   }
 

@@ -8,6 +8,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "./supabase";
 import { QK } from "./store";
 import { useAuth } from "./auth";
+import { isDemoMode } from "./demo";
 
 /**
  * Mount this inside any project view to get live task/comment/activity updates
@@ -17,7 +18,7 @@ export function useProjectRealtime(projectId: string) {
   const qc = useQueryClient();
 
   useEffect(() => {
-    if (!projectId) return;
+    if (!projectId || isDemoMode()) return;
 
     const channel = supabase
       .channel(`project:${projectId}`)
@@ -74,7 +75,7 @@ export function useNotificationRealtime() {
   const qc = useQueryClient();
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || isDemoMode()) return;
 
     const channel = supabase
       .channel(`notifications:${user.id}`)
@@ -108,7 +109,7 @@ export function useProjectsRealtime() {
   const qc = useQueryClient();
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || isDemoMode()) return;
 
     const channel = supabase
       .channel(`projects:${user.id}`)

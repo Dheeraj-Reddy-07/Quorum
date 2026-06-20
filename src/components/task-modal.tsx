@@ -34,9 +34,15 @@ function TaskModalInner({ taskId, onClose }: { taskId: string; onClose: () => vo
 
   // Fetch the task by ID to get its projectId
   useEffect(() => {
-    import("@/lib/supabase").then(({ supabase }) => {
-      supabase.from("tasks").select("project_id").eq("id", taskId).single().then(({ data }) => {
-        if (data) setProjectId(data.project_id);
+    import("@/lib/demo").then(({ isDemoMode, demoApi }) => {
+      if (isDemoMode()) {
+        setProjectId(demoApi.resolveTaskProjectId(taskId));
+        return;
+      }
+      import("@/lib/supabase").then(({ supabase }) => {
+        supabase.from("tasks").select("project_id").eq("id", taskId).single().then(({ data }) => {
+          if (data) setProjectId(data.project_id);
+        });
       });
     });
   }, [taskId]);

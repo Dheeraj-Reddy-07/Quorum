@@ -8,6 +8,7 @@ import {
   formatRelative,
 } from "@/lib/store";
 import { useNotificationRealtime, useProjectsRealtime } from "@/lib/realtime";
+import { isDemoMode } from "@/lib/demo";
 import { Avatar } from "@/components/avatar";
 import { useQuickAdd } from "@/components/quick-add";
 import {
@@ -42,11 +43,28 @@ function AppLayout() {
     <div className="flex min-h-screen bg-background text-foreground">
       <Sidebar />
       <div className="ml-[240px] flex min-h-screen flex-1 flex-col">
+        {isDemoMode() && <DemoBanner />}
         <Topbar />
         <main className="flex-1 anim-fade-in">
           <Outlet />
         </main>
       </div>
+    </div>
+  );
+}
+
+function DemoBanner() {
+  const { signOut } = useAuth();
+  return (
+    <div className="flex items-center justify-center gap-3 border-b border-primary/20 bg-primary/10 px-4 py-1.5 text-xs text-primary">
+      <Sparkles className="h-3.5 w-3.5" />
+      <span>
+        <span className="font-semibold">Demo mode</span> — exploring with sample data. Changes
+        live only in your browser.
+      </span>
+      <button onClick={signOut} className="font-medium underline underline-offset-2 hover:opacity-80">
+        Exit demo
+      </button>
     </div>
   );
 }

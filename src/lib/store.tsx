@@ -6,6 +6,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "./supabase";
 import { useAuth } from "./auth";
+import { isDemoMode, demoApi } from "./demo";
 import type { Activity, Comment, Member, Notification, Project, Task, TaskStatus, Role, Priority } from "./types";
 
 // ─── Re-export types so existing imports still work ──────────────────────────
@@ -31,6 +32,7 @@ export function useProjects() {
     queryKey: QK.projects,
     enabled: !!user,
     queryFn: async () => {
+      if (isDemoMode()) return demoApi.projects();
       const { data, error } = await supabase
         .from("projects")
         .select("*, project_members!inner(user_id)")
@@ -48,6 +50,7 @@ export function useProject(projectId: string) {
     queryKey: ["project", projectId],
     enabled: !!user && !!projectId,
     queryFn: async () => {
+      if (isDemoMode()) return demoApi.project(projectId);
       const { data, error } = await supabase
         .from("projects")
         .select("*")
@@ -63,6 +66,7 @@ export function useCreateProject() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ name, description }: { name: string; description: string }) => {
+      if (isDemoMode()) return demoApi.createProject({ name, description });
       const { data, error } = await supabase.rpc("create_project", {
         p_name: name,
         p_description: description,
@@ -78,6 +82,7 @@ export function useUpdateProject() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, patch }: { id: string; patch: Partial<Project> }) => {
+      if (isDemoMode()) return demoApi.updateProject({ id, patch });
       const { error } = await supabase
         .from("projects")
         .update({ name: patch.name, description: patch.description, status: patch.status })
@@ -97,6 +102,7 @@ export function useMembers(projectId: string) {
     queryKey: QK.members(projectId),
     enabled: !!projectId,
     queryFn: async () => {
+      if (isDemoMode()) return demoApi.members(projectId);
       const { data, error } = await supabase
         .from("project_members")
         .select("*, profiles(id, name, email, avatar_url)")
@@ -119,6 +125,7 @@ export function useAllMembers() {
     queryKey: QK.allMembers,
     enabled: !!user,
     queryFn: async () => {
+      if (isDemoMode()) return demoApi.allMembers();
       const { data, error } = await supabase
         .from("project_members")
         .select("*, profiles(id, name, email, avatar_url)");
@@ -140,6 +147,7 @@ export function useMyRole(projectId: string) {
     queryKey: ["myRole", projectId],
     enabled: !!user && !!projectId,
     queryFn: async () => {
+      if (isDemoMode()) return demoApi.myRole(projectId);
       const { data } = await supabase
         .from("project_members")
         .select("role")
@@ -155,6 +163,7 @@ export function useAddMember() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ projectId, email, role }: { projectId: string; email: string; role: Role }) => {
+      if (isDemoMode()) return demoApi.addMember({ projectId, email, role });
       const { data: profile, error: pe } = await supabase
         .from("profiles")
         .select("id")
@@ -176,6 +185,7 @@ export function useRemoveMember() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ projectId, userId }: { projectId: string; userId: string }) => {
+      if (isDemoMode()) return demoApi.removeMember({ projectId, userId });
       await supabase.from("project_members").delete().eq("project_id", projectId).eq("user_id", userId);
     },
     onSuccess: (_d, { projectId }) => qc.invalidateQueries({ queryKey: QK.members(projectId) }),
@@ -186,6 +196,7 @@ export function useSetMemberRole() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ projectId, userId, role }: { projectId: string; userId: string; role: Role }) => {
+      if (isDemoMode()) return demoApi.setMemberRole({ projectId, userId, role });
       await supabase.from("project_members").update({ role }).eq("project_id", projectId).eq("user_id", userId);
     },
     onSuccess: (_d, { projectId }) => qc.invalidateQueries({ queryKey: QK.members(projectId) }),
@@ -198,6 +209,7 @@ export function useTasks(projectId: string) {
     queryKey: QK.tasks(projectId),
     enabled: !!projectId,
     queryFn: async () => {
+      if (isDemoMode()) return demoApi.tasks(projectId);
       const { data, error } = await supabase
         .from("tasks")
         .select("*")
@@ -215,6 +227,7 @@ export function useAllTasks() {
     queryKey: QK.allTasks,
     enabled: !!user,
     queryFn: async () => {
+      if (isDemoMode()) return demoApi.allTasks();
       // Only tasks for projects the user is a member of (enforced by RLS)
       const { data, error } = await supabase
         .from("tasks")
@@ -231,6 +244,7 @@ export function useCreateTask() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (data: Partial<Task> & { title: string; projectId: string }) => {
+      if (isDemoMode()) return demoApi.createTask(data);
       const { data: task, error } = await supabase
         .from("tasks")
         .insert({
@@ -271,6 +285,7 @@ export function useUpdateTask() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, patch, projectId }: { id: string; patch: Partial<Task>; projectId: string }) => {
+      if (isDemoMode()) return demoApi.updateTask({ id, patch, projectId });
       const update: Record<string, unknown> = {};
       if (patch.title !== undefined) update.title = patch.title;
       if (patch.description !== undefined) update.description = patch.description;
@@ -307,6 +322,7 @@ export function useDeleteTask() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, projectId }: { id: string; projectId: string }) => {
+      if (isDemoMode()) { demoApi.deleteTask({ id, projectId }); return projectId; }
       await supabase.from("tasks").delete().eq("id", id);
       return projectId;
     },
@@ -322,6 +338,7 @@ export function useMoveTask() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, status, position, projectId }: { id: string; status: TaskStatus; position: number; projectId: string }) => {
+      if (isDemoMode()) return demoApi.moveTask({ id, status, position, projectId });
       const { error } = await supabase
         .from("tasks")
         .update({ status, position, updated_at: new Date().toISOString() })
@@ -349,6 +366,7 @@ export function useComments(taskId: string) {
     queryKey: QK.comments(taskId),
     enabled: !!taskId,
     queryFn: async () => {
+      if (isDemoMode()) return demoApi.comments(taskId);
       const { data, error } = await supabase
         .from("comments")
         .select("*, profiles(id, name)")
@@ -372,6 +390,7 @@ export function useAddComment() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ taskId, content, projectId }: { taskId: string; content: string; projectId: string }) => {
+      if (isDemoMode()) return demoApi.addComment({ taskId, content, projectId });
       const { error } = await supabase.from("comments").insert({
         task_id: taskId,
         author_id: user!.id,
@@ -411,6 +430,7 @@ export function useActivity(projectId: string) {
     queryKey: QK.activity(projectId),
     enabled: !!projectId,
     queryFn: async () => {
+      if (isDemoMode()) return demoApi.activity(projectId);
       const { data, error } = await supabase
         .from("activity")
         .select("*, profiles(id, name)")
@@ -438,6 +458,7 @@ export function useAllActivity() {
     queryKey: QK.allActivity,
     enabled: !!user,
     queryFn: async () => {
+      if (isDemoMode()) return demoApi.allActivity();
       const { data, error } = await supabase
         .from("activity")
         .select("*, profiles(id, name)")
@@ -465,6 +486,7 @@ export function useNotifications() {
     queryKey: QK.notifications(user?.id ?? ""),
     enabled: !!user,
     queryFn: async () => {
+      if (isDemoMode()) return demoApi.notifications();
       const { data, error } = await supabase
         .from("notifications")
         .select("*")
@@ -489,6 +511,7 @@ export function useMarkNotificationRead() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
+      if (isDemoMode()) return demoApi.markNotificationRead(id);
       await supabase.from("notifications").update({ read: true }).eq("id", id);
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: QK.notifications(user?.id ?? "") }),
@@ -500,6 +523,7 @@ export function useMarkAllNotificationsRead() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async () => {
+      if (isDemoMode()) return demoApi.markAllNotificationsRead();
       await supabase.from("notifications").update({ read: true }).eq("user_id", user!.id);
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: QK.notifications(user?.id ?? "") }),

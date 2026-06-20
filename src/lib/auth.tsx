@@ -7,6 +7,7 @@ import {
 } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "./supabase";
+import { isDemoMode, enableDemo, disableDemo, DEMO_USER } from "./demo";
 
 interface Profile {
   id: string;
@@ -23,7 +24,12 @@ interface AuthCtx {
   signIn: (email: string, password: string) => Promise<{ error: string | null; name: string | null }>;
   signUp: (name: string, email: string, password: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
+  enterDemo: () => void;
 }
+
+// Minimal fake Supabase user/profile used while demo mode is active.
+const DEMO_AUTH_USER = { id: DEMO_USER.id, email: DEMO_USER.email } as unknown as User;
+const DEMO_PROFILE: Profile = { id: DEMO_USER.id, name: DEMO_USER.name, email: DEMO_USER.email };
 
 const Ctx = createContext<AuthCtx | null>(null);
 
@@ -43,6 +49,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
+    // Demo mode: serve a fake user entirely client-side, skip Supabase.
+    if (isDemoMode()) {
+      setUser(DEMO_AUTH_USER);
+      setProfile(DEMO_PROFILE);
+      setLoading(false);
+      return;
+    }
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -89,13 +103,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: null };
   }
 
+  function enterDemo() {
+    enableDemo();
+    setSession(null);
+    setUser(DEMO_AUTH_USER);
+    setProfile(DEMO_PROFILE);
+    setLoading(false);
+  }
+
   async function signOut() {
+    if (isDemoMode()) {
+      disableDemo();
+      setUser(null);
+      setProfile(null);
+      setSession(null);
+      return;
+    }
     await supabase.auth.signOut();
     setProfile(null);
   }
 
   return (
-    <Ctx.Provider value={{ session, user, profile, loading, signIn, signUp, signOut }}>
+    <Ctx.Provider value={{ session, user, profile, loading, signIn, signUp, signOut, enterDemo }}>
       {children}
     </Ctx.Provider>
   );

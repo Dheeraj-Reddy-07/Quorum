@@ -1,4 +1,4 @@
-import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
+import { createFileRoute, Link, Navigate, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
 import { ArrowRight, Kanban, Activity, Users, BarChart3, Bell, Sparkles } from "lucide-react";
 
@@ -7,7 +7,8 @@ export const Route = createFileRoute("/")({
 });
 
 function Landing() {
-  const { user } = useAuth();
+  const { user, enterDemo } = useAuth();
+  const navigate = useNavigate();
   if (user) return <Navigate to="/app" />;
 
   return (
@@ -41,10 +42,17 @@ function Landing() {
           <Link to="/signup" className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90">
             Start your workspace <ArrowRight className="h-4 w-4" />
           </Link>
+          <button
+            onClick={() => { enterDemo(); navigate({ to: "/app" }); }}
+            className="inline-flex items-center gap-2 rounded-md border border-primary/40 bg-primary/10 px-5 py-2.5 text-sm font-medium text-primary hover:bg-primary/20"
+          >
+            <Sparkles className="h-4 w-4" /> Explore the live demo
+          </button>
           <Link to="/login" className="inline-flex items-center gap-2 rounded-md border border-border bg-surface px-5 py-2.5 text-sm font-medium hover:bg-accent">
             Sign in
           </Link>
         </div>
+        <p className="mt-3 text-xs text-muted-foreground">No signup. Sample data loads instantly — explore boards, analytics & more.</p>
       </section>
 
       <section className="mx-auto max-w-6xl px-6 pb-24">
