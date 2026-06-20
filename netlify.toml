@@ -1,0 +1,42 @@
+[build]
+  command = "npm run build"
+  publish = ".output/public"
+  functions = ".netlify/functions"
+
+[functions]
+  directory = ".netlify/functions"
+  node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/.netlify/functions/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[context.production]
+  environment = { ENVIRONMENT = "production" }
+
+[context.deploy-preview]
+  environment = { ENVIRONMENT = "preview" }
+
+[context.branch-deploy]
+  environment = { ENVIRONMENT = "staging" }
