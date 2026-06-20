@@ -1,8 +1,10 @@
 [build]
+  # base = "" neutralizes any stray "Base directory" set in the Netlify UI.
   base = ""
   command = "npm run build"
-  publish = ".output/public"
-  functions = ".netlify/functions"
+  # TanStack Start + Nitro "netlify" preset emits client assets to dist/
+  # and the SSR server function to .netlify/functions-internal/ (auto-packaged).
+  publish = "dist"
 
 [build.environment]
   # VITE_-prefixed vars are inlined into the client bundle by design, and the
@@ -10,19 +12,9 @@
   # Tell Netlify's secret scanner not to treat them as leaked secrets.
   SECRETS_SCAN_OMIT_KEYS = "VITE_SUPABASE_URL,VITE_SUPABASE_ANON_KEY"
 
-[functions]
-  directory = ".netlify/functions"
-  node_bundler = "esbuild"
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-
-[[headers]]
-  for = "/*"
-  [headers.values]
-    Cache-Control = "public, max-age=3600"
+# NOTE: no [[redirects]] catch-all. This is an SSR app — the Nitro netlify
+# preset wires request routing to the server function automatically. A manual
+# /* -> /index.html rule would shadow SSR and serve a non-existent static shell.
 
 [[headers]]
   for = "/*.js"
@@ -33,11 +25,6 @@
   for = "/*.css"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
-
-[[headers]]
-  for = "/.netlify/functions/*"
-  [headers.values]
-    Cache-Control = "public, max-age=0, must-revalidate"
 
 [context.production]
   environment = { ENVIRONMENT = "production" }
