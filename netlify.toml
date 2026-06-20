@@ -4,6 +4,12 @@
   publish = ".output/public"
   functions = ".netlify/functions"
 
+[build.environment]
+  # VITE_-prefixed vars are inlined into the client bundle by design, and the
+  # Supabase anon key + URL are meant to be public (RLS enforces access control).
+  # Tell Netlify's secret scanner not to treat them as leaked secrets.
+  SECRETS_SCAN_OMIT_KEYS = "VITE_SUPABASE_URL,VITE_SUPABASE_ANON_KEY"
+
 [functions]
   directory = ".netlify/functions"
   node_bundler = "esbuild"
