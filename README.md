@@ -1,28 +1,26 @@
 # Quorum
 
-**Quorum** is a production-ready project management platform built for modern engineering teams. Ship projects, track tasks, and keep your team in sync — all in one place.
-
-> **Live Demo:** [quorum.online-production.up.railway.app](https://quorum.online-production.up.railway.app) &nbsp;|&nbsp; **Demo login:** `demo@quorum.app` / `demo1234`
+**Quorum** is a production-ready project management platform built for modern engineering teams. Ship projects, track tasks, and keep your team in sync all in one place.
 
 ---
 
 ## Features
 
 ### Core (Assignment Requirements)
-- **Auth** — Signup / Login with JWT-based authentication via Supabase
-- **RBAC** — Admin and Member roles enforced at both UI and database (RLS) levels
-- **Projects** — Create projects, invite team members, manage roles
-- **Tasks** — Create, assign, and track tasks with full status lifecycle
-- **Dashboard** — At-a-glance view of tasks, statuses, and overdue items
-- **REST APIs + PostgreSQL** — Supabase backend with Row Level Security
-- **Deployed live** — Hosted on Railway
+- **Auth**: Signup / Login with JWT-based authentication via Supabase
+- **RBAC**: Admin and Member roles enforced at both UI and database (RLS) levels
+- **Projects**: Create projects, invite team members, manage roles
+- **Tasks**: Create, assign, and track tasks with full status lifecycle
+- **Dashboard**: At-a-glance view of tasks, statuses, and overdue items
+- **REST APIs + PostgreSQL**: Supabase backend with Row Level Security
+- **Deployed live**: Hosted on Railway
 
 ### Standout Features
 | Feature | Details |
 |---|---|
 | **Kanban Board** | Drag-and-drop columns: Backlog / Active / In Review / Shipped (dnd-kit) |
 | **List View** | Sortable table with column headers, priority, status, due date |
-| **Task Detail Modal** | Inline editing — no page navigation required |
+| **Task Detail Modal** | Inline editing: no page navigation required |
 | **Task Filters** | Filter by assignee, priority, and status |
 | **Search** | Search tasks by title in real time |
 | **Activity Log** | Per-project audit trail of all actions |
@@ -30,7 +28,7 @@
 | **Workload View** | Visual indicator of who is overloaded |
 | **Real-time Updates** | Board and notifications sync live via Supabase Realtime (no refresh needed) |
 | **Deadline Badges** | Due Soon (amber) / Overdue (red), auto-flagged via pg_cron |
-| **Task Dependencies** | Block a task on another — cannot ship until blocker is resolved |
+| **Task Dependencies** | Block a task on another: cannot ship until blocker is resolved |
 | **Quick Add** | Keyboard shortcut `N` to create a task from anywhere |
 | **CSV Export** | Export all tasks for a project (Admin only) |
 | **Demo Mode** | One-click demo login with pre-seeded realistic team data |
@@ -79,8 +77,8 @@ VITE_SUPABASE_ANON_KEY=your-anon-key
 
 In your Supabase project → **SQL Editor**, run (in order):
 
-1. **`supabase_master_setup.sql`** — Tables, RLS policies, security definer functions, Realtime, and auto-profile trigger
-2. **`supabase_seed.sql`** *(optional)* — Seeds demo team data for the Try Demo button
+1. **`supabase_master_setup.sql`**: Tables, RLS policies, security definer functions, Realtime, and auto-profile trigger
+2. **`supabase_seed.sql`** *(optional)*: Seeds demo team data for the Try Demo button
 
 ### 4. Disable email confirmation
 
@@ -140,7 +138,7 @@ See **[DEPLOY.md](./DEPLOY.md)** for the full step-by-step guide.
 
 ---
 
-## RBAC — Role-Based Access Control
+## RBAC: Role-Based Access Control
 
 Roles are per-project (`ADMIN` or `MEMBER`), enforced at the database level via Supabase RLS policies.
 
